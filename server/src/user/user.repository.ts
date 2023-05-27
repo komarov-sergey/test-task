@@ -38,9 +38,9 @@ export class UserController {
     }
   }
 
-  public static async loginUser({ email, password }) {
+  public static async loginUser({ username, password }) {
     try {
-      let user = await UserRepository.findOneBy({ email });
+      let user = await UserRepository.findOneBy({ username });
       if (!user || user.password !== password) {
         return Promise.reject("Not valid email or password");
       }
