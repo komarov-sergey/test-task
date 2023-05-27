@@ -1,8 +1,18 @@
 header {
-  padding: 1rem 10rem 1rem 0;
+  padding: 2rem 10rem 1rem 0;
   display: flex;
   justify-content: flex-end;
   align-items: center;
+
+  form {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+
+    button {
+      align-self: flex-start;
+    }
+  }
 }
 
 main {
@@ -16,5 +26,16 @@ main {
 
   button {
     align-self: flex-end;
+  }
+
+  form {
+    display: flex;
+    flex-direction: row;
+    width: 70rem;
+    gap: 1rem;
+
+    button {
+      align-self: flex-start;
+    }
   }
 }
