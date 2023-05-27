@@ -8,7 +8,7 @@ import { classNames } from "primereact/utils";
 import { Toast } from "primereact/toast";
 import { Password } from "primereact/password";
 
-import s from "./App.module.scss";
+// import s from "./App.module.scss";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -29,14 +29,14 @@ function App() {
     handleSubmit,
     getValues,
     setValue,
-    reset,
+    // reset,
   } = useForm({ defaultAddTaskValues });
   const {
     control: controlLogin,
     formState: { errors: errorsLogin },
     handleSubmit: handleSubmitLogin,
     getValues: getValuesLogin,
-    reset: resetLogin,
+    // reset: resetLogin,
   } = useForm({ defaultLoginValues });
 
   const toast = useRef(null);
