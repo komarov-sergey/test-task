@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
+import {useEffect, useState} from 'react'
 
-export default (key, initialValue = "") => {
+export default (key, initialValue = '') => {
   const [value, setValue] = useState(() => {
-    return sessionStorage.getItem(key) || initialValue;
-  });
+    return sessionStorage.getItem(key) || initialValue
+  })
 
   useEffect(() => {
-    sessionStorage.setItem(key, value);
-  }, [value, key]);
+    sessionStorage.setItem(key, value)
+  }, [value, key])
 
-  return [value, setValue];
-};
+  return [value, setValue]
+}

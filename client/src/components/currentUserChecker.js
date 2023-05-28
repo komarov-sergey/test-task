@@ -1,23 +1,23 @@
-import { useEffect, useContext } from "react";
+import {useEffect, useContext} from 'react'
 
-import { CurrentUserContext } from "../contexts/currentUser";
-import useSessionStorage from "../hooks/useSessionStorage";
-import { useJwt } from "react-jwt";
+import {CurrentUserContext} from '../contexts/currentUser'
+import useSessionStorage from '../hooks/useSessionStorage'
+import {useJwt} from 'react-jwt'
 
-const CurrentUserChecker = ({ children }) => {
-  const [, dispatch] = useContext(CurrentUserContext);
-  const [token] = useSessionStorage("token");
-  const { decodedToken } = useJwt(token);
+const CurrentUserChecker = ({children}) => {
+  const [, dispatch] = useContext(CurrentUserContext)
+  const [token] = useSessionStorage('token')
+  const {decodedToken} = useJwt(token)
 
   useEffect(() => {
     if (!token) {
-      dispatch({ type: "SET_UNAUTHORIZED" });
+      dispatch({type: 'SET_UNAUTHORIZED'})
     } else {
-      dispatch({ type: "SET_AUTHORIZED", payload: decodedToken });
+      dispatch({type: 'SET_AUTHORIZED', payload: decodedToken})
     }
-  }, [token, dispatch, decodedToken]);
+  }, [token, dispatch, decodedToken])
 
-  return children;
-};
+  return children
+}
 
-export default CurrentUserChecker;
+export default CurrentUserChecker

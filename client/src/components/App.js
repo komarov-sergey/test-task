@@ -1,239 +1,227 @@
-import { useEffect, useState, useRef, useContext } from "react";
-import { Button } from "primereact/button";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
-import { InputText } from "primereact/inputtext";
-import { Controller, useForm } from "react-hook-form";
-import { classNames } from "primereact/utils";
-import { Toast } from "primereact/toast";
-import { Password } from "primereact/password";
-import { Checkbox } from "primereact/checkbox";
-import { useJwt } from "react-jwt";
+import {useEffect, useState, useRef, useContext} from 'react'
+import {Button} from 'primereact/button'
+import {DataTable} from 'primereact/datatable'
+import {Column} from 'primereact/column'
+import {InputText} from 'primereact/inputtext'
+import {Controller, useForm} from 'react-hook-form'
+import {classNames} from 'primereact/utils'
+import {Toast} from 'primereact/toast'
+import {Password} from 'primereact/password'
+import {Checkbox} from 'primereact/checkbox'
+import {useJwt} from 'react-jwt'
 
-import { CurrentUserContext } from "../contexts/currentUser";
-import useSessionStorage from "../hooks/useSessionStorage";
-import s from "./App.module.scss";
+import {CurrentUserContext} from '../contexts/currentUser'
+import useSessionStorage from '../hooks/useSessionStorage'
+import s from './App.module.scss'
 
 function App() {
-  const [token, setToken] = useSessionStorage("token");
-  const [tasks, setTasks] = useState([]);
-  const [selectedTask, setSelectedTask] = useState(null);
+  const [token, setToken] = useSessionStorage('token')
+  const [tasks, setTasks] = useState([])
+  const [selectedTask, setSelectedTask] = useState(null)
   const defaultAddTaskValues = {
-    username: "",
-    email: "",
-    body: "",
+    username: '',
+    email: '',
+    body: '',
     status: false,
-  };
+  }
   const defaultLoginValues = {
-    email: "",
-    password: "",
-  };
+    email: '',
+    password: '',
+  }
   const {
     control,
-    formState: { errors },
+    formState: {errors},
     handleSubmit,
     getValues,
     setValue,
-  } = useForm({ defaultAddTaskValues });
+  } = useForm({defaultAddTaskValues})
   const {
     control: controlLogin,
-    formState: { errors: errorsLogin },
+    formState: {errors: errorsLogin},
     handleSubmit: handleSubmitLogin,
     getValues: getValuesLogin,
-  } = useForm({ defaultLoginValues });
-  const [currentUserState, dispatch] = useContext(CurrentUserContext);
-  const { decodedToken } = useJwt(token);
-  const toast = useRef(null);
+  } = useForm({defaultLoginValues})
+  const [currentUserState, dispatch] = useContext(CurrentUserContext)
+  const {decodedToken} = useJwt(token)
+  const toast = useRef(null)
 
   useEffect(() => {
-    getAllTasks();
-  }, []);
+    getAllTasks()
+  }, [])
 
-  const show = (severity = "success", msg) => {
+  const show = (severity = 'success', msg) => {
     toast.current.show({
       severity,
       summary: msg,
-      detail: getValues("value"),
-    });
-  };
+      detail: getValues('value'),
+    })
+  }
 
   const clearForm = () => {
-    setValue("username", "");
-    setValue("email", "");
-    setValue("body", "");
-    setValue("status", false);
-    setSelectedTask(null);
-  };
+    setValue('username', '')
+    setValue('email', '')
+    setValue('body', '')
+    setValue('status', false)
+    setSelectedTask(null)
+  }
 
   const getAllTasks = () => {
-    fetch("/api/task")
+    fetch('/api/task')
       .then((response) => {
-        return response.ok ? response.json() : Promise.reject(response.json());
+        return response.ok ? response.json() : Promise.reject(response.json())
       })
       .then((taskData) => {
-        setTasks(taskData);
+        setTasks(taskData)
       })
       .catch((err) => {
         err.then((json) => {
-          show("error", json.errors.body[0]);
-        });
-      });
-  };
+          show('error', json.errors.body[0])
+        })
+      })
+  }
 
   const upsertTask = (data) => {
     if (!selectedTask) {
-      fetch("/api/task", {
-        method: "POST",
+      fetch('/api/task', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ task: getValues() }),
+        body: JSON.stringify({task: getValues()}),
       })
         .then((response) => {
-          return response.ok
-            ? response.json()
-            : Promise.reject(response.json());
+          return response.ok ? response.json() : Promise.reject(response.json())
         })
         .then((taskData) => {
-          getAllTasks();
-          show("success", "Task Added");
+          getAllTasks()
+          show('success', 'Task Added')
         })
         .catch((err) => {
           err.then((json) => {
-            show("error", json.errors.body[0]);
-          });
-        });
+            show('error', json.errors.body[0])
+          })
+        })
     } else {
       fetch(`/api/task/${selectedTask.id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Token ${token}`,
         },
-        body: JSON.stringify({ task: getValues() }),
+        body: JSON.stringify({task: getValues()}),
       })
         .then((response) => {
-          return response.ok
-            ? response.json()
-            : Promise.reject(response.json());
+          return response.ok ? response.json() : Promise.reject(response.json())
         })
         .then((taskData) => {
-          getAllTasks();
-          show("success", "Task Updated");
+          getAllTasks()
+          show('success', 'Task Updated')
         })
         .catch((err) => {
           err.then((json) => {
             show(
-              "error",
-              json.code === "UNAUTHORIZED_ERROR"
-                ? "Session Expired pls relogin"
-                : "Something went wrong"
-            );
-          });
-        });
+              'error',
+              json.code === 'UNAUTHORIZED_ERROR'
+                ? 'Session Expired pls relogin'
+                : 'Something went wrong'
+            )
+          })
+        })
     }
 
-    clearForm();
-  };
+    clearForm()
+  }
 
   const doLogin = (data) => {
-    const formValues = getValuesLogin();
+    const formValues = getValuesLogin()
 
     const reqBody = {
       user: {
         username: formValues.usernameLogin,
         password: formValues.passwordLogin,
       },
-    };
+    }
 
-    fetch("/api/user/login", {
-      method: "POST",
+    fetch('/api/user/login', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(reqBody),
     })
       .then((response) => {
-        return response.ok ? response.json() : Promise.reject(response.json());
+        return response.ok ? response.json() : Promise.reject(response.json())
       })
       .then((userData) => {
-        getAllTasks();
-        show("success", "Login Success");
-        dispatch({ type: "SET_AUTHORIZED", payload: userData });
-        setToken(userData.token);
+        getAllTasks()
+        show('success', 'Login Success')
+        dispatch({type: 'SET_AUTHORIZED', payload: userData})
+        setToken(userData.token)
       })
       .catch((err) => {
         err.then((json) => {
-          show("error", json.errors.body[0]);
-        });
-      });
-  };
+          show('error', json.errors.body[0])
+        })
+      })
+  }
 
   const doLogout = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     const reqBody = {
       user: {
         id: decodedToken.id,
       },
-    };
+    }
 
-    fetch("/api/user/logout", {
-      method: "POST",
+    fetch('/api/user/logout', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(reqBody),
     })
       .then((response) => {
-        return response.ok ? response.json() : Promise.reject(response.json());
+        return response.ok ? response.json() : Promise.reject(response.json())
       })
       .then((userData) => {
-        getAllTasks();
-        show("success", "Logout Success");
+        getAllTasks()
+        show('success', 'Logout Success')
       })
       .catch((err) => {
         err.then((json) => {
-          show("error", json.errors.body[0]);
-        });
+          show('error', json.errors.body[0])
+        })
       })
       .finally(() => {
-        setToken("");
-        clearForm();
-        dispatch({ type: "SET_UNAUTHORIZED" });
-      });
-  };
+        setToken('')
+        clearForm()
+        dispatch({type: 'SET_UNAUTHORIZED'})
+      })
+  }
 
   const onSelectTask = (e) => {
     if (!currentUserState.isLoggedIn) {
-      return;
+      return
     }
 
-    setSelectedTask(e.value);
-    setValue("username", e.value.username);
-    setValue("email", e.value.email);
-    setValue("body", e.value.body);
-    setValue("status", e.value.status);
-  };
+    setSelectedTask(e.value)
+    setValue('username', e.value.username)
+    setValue('email', e.value.email)
+    setValue('body', e.value.body)
+    setValue('status', e.value.status)
+  }
 
   const addNewTackClick = (e) => {
-    clearForm();
-  };
+    clearForm()
+  }
 
-  const getFormErrorMessage = (name) => {
+  const getFormErrorMessage = (name, errors) => {
     return errors[name] ? (
       <small className="p-error">{errors[name].message}</small>
     ) : (
       <small className="p-error">&nbsp;</small>
-    );
-  };
-
-  const getFormErrorMessageLogin = (name) => {
-    return errorsLogin[name] ? (
-      <small className="p-error">{errorsLogin[name].message}</small>
-    ) : (
-      <small className="p-error">&nbsp;</small>
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -242,46 +230,46 @@ function App() {
           <Controller
             name="usernameLogin"
             control={controlLogin}
-            rules={{ required: "Username is required." }}
-            render={({ field, fieldState }) => (
+            rules={{required: 'Username is required.'}}
+            render={({field, fieldState}) => (
               <div>
                 <label
                   htmlFor={field.name}
-                  className={classNames({ "p-error": errors.value })}
+                  className={classNames({'p-error': errors.value})}
                 ></label>
                 <span className="p-float-label">
                   <InputText
                     id={field.name}
                     value={field.value}
-                    className={classNames({ "p-invalid": fieldState.error })}
+                    className={classNames({'p-invalid': fieldState.error})}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
                   <label htmlFor={field.name}>Username</label>
                 </span>
-                {getFormErrorMessageLogin(field.name)}
+                {getFormErrorMessage(field.name, errorsLogin)}
               </div>
             )}
           />
           <Controller
             name="passwordLogin"
             control={controlLogin}
-            rules={{ required: "Password is required." }}
-            render={({ field, fieldState }) => (
+            rules={{required: 'Password is required.'}}
+            render={({field, fieldState}) => (
               <div>
                 <label
                   htmlFor={field.name}
-                  className={classNames({ "p-error": errors.value })}
+                  className={classNames({'p-error': errors.value})}
                 ></label>
                 <span className="p-float-label">
                   <Password
                     id={field.name}
                     value={field.value}
-                    className={classNames({ "p-invalid": fieldState.error })}
+                    className={classNames({'p-invalid': fieldState.error})}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
                   <label htmlFor={field.name}>Password</label>
                 </span>
-                {getFormErrorMessageLogin(field.name)}
+                {getFormErrorMessage(field.name, errorsLogin)}
               </div>
             )}
           />
@@ -297,23 +285,23 @@ function App() {
           <Controller
             name="username"
             control={control}
-            rules={{ required: "Username is required." }}
-            render={({ field, fieldState }) => (
+            rules={{required: 'Username is required.'}}
+            render={({field, fieldState}) => (
               <div>
                 <label
                   htmlFor={field.name}
-                  className={classNames({ "p-error": errors.value })}
+                  className={classNames({'p-error': errors.value})}
                 ></label>
                 <span className="p-float-label">
                   <InputText
                     id={field.name}
                     value={field.value}
-                    className={classNames({ "p-invalid": fieldState.error })}
+                    className={classNames({'p-invalid': fieldState.error})}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
                   <label htmlFor={field.name}>Username</label>
                 </span>
-                {getFormErrorMessage(field.name)}
+                {getFormErrorMessage(field.name, errors)}
               </div>
             )}
           />
@@ -321,62 +309,62 @@ function App() {
             name="email"
             control={control}
             rules={{
-              required: "Email is required.",
+              required: 'Email is required.',
               pattern: {
                 value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-                message: "Invalid email address",
+                message: 'Invalid email address',
               },
             }}
-            render={({ field, fieldState }) => (
+            render={({field, fieldState}) => (
               <div>
                 <label
                   htmlFor={field.name}
-                  className={classNames({ "p-error": errors.value })}
+                  className={classNames({'p-error': errors.value})}
                 ></label>
                 <span className="p-float-label">
                   <InputText
                     id={field.name}
                     value={field.value}
-                    className={classNames({ "p-invalid": fieldState.error })}
+                    className={classNames({'p-invalid': fieldState.error})}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
                   <label htmlFor={field.name}>Email</label>
                 </span>
-                {getFormErrorMessage(field.name)}
+                {getFormErrorMessage(field.name, errors)}
               </div>
             )}
           />
           <Controller
             name="body"
             control={control}
-            rules={{ required: "Body is required." }}
-            render={({ field, fieldState }) => (
+            rules={{required: 'Body is required.'}}
+            render={({field, fieldState}) => (
               <div>
                 <label
                   htmlFor={field.name}
-                  className={classNames({ "p-error": errors.value })}
+                  className={classNames({'p-error': errors.value})}
                 ></label>
                 <span className="p-float-label">
                   <InputText
                     id={field.name}
                     value={field.value}
-                    className={classNames({ "p-invalid": fieldState.error })}
+                    className={classNames({'p-invalid': fieldState.error})}
                     onChange={(e) => field.onChange(e.target.value)}
                   />
                   <label htmlFor={field.name}>Body</label>
                 </span>
-                {getFormErrorMessage(field.name)}
+                {getFormErrorMessage(field.name, errors)}
               </div>
             )}
           />
           <Controller
             name="status"
             control={control}
-            render={({ field, fieldState }) => (
+            render={({field, fieldState}) => (
               <div className={s.checkbox}>
                 <Checkbox
                   id={field.name}
-                  className={classNames({ "p-invalid": fieldState.error })}
+                  className={classNames({'p-invalid': fieldState.error})}
                   inputRef={field.ref}
                   checked={field.value}
                   onChange={(e) => field.onChange(!field.value)}
@@ -390,7 +378,7 @@ function App() {
         {tasks[0] && (
           <DataTable
             value={tasks[0]}
-            tableStyle={{ width: "70rem" }}
+            tableStyle={{width: '70rem'}}
             selectionMode="single"
             selection={selectedTask}
             onSelectionChange={onSelectTask}
@@ -408,7 +396,7 @@ function App() {
       </main>
       <Toast ref={toast} position="bottom-right" />
     </>
-  );
+  )
 }
 
-export default App;
+export default App
