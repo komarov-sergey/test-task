@@ -8,7 +8,7 @@ export default new Router()
   .post(
     '/',
     bodySchema({
-      task: {
+      user: {
         email: Joi.string().required(),
         password: Joi.string().required(),
         username: Joi.string().required(),
@@ -19,7 +19,7 @@ export default new Router()
   .post(
     '/login',
     bodySchema({
-      task: {
+      user: {
         password: Joi.string().required(),
         username: Joi.string().required(),
       },
