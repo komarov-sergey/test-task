@@ -1,39 +1,39 @@
-import Router from "koa-router";
+import Router from 'koa-router'
 
-import { UserController } from "./user.repository";
-import { handleResponsePromise } from "../helpers";
+import {UserController} from './user.repository'
+import {handleResponsePromise} from '../helpers'
 
 export default new Router()
-  .post("/", registerUser)
-  .post("/login", login)
-  .post("/logout", logout);
+  .post('/', registerUser)
+  .post('/login', login)
+  .post('/logout', logout)
 
 export async function registerUser(ctx) {
   const {
     request: {
-      body: { user },
+      body: {user},
     },
-  } = ctx;
+  } = ctx
 
-  await handleResponsePromise(UserController.registerUser(user), ctx);
+  await handleResponsePromise(UserController.registerUser(user), ctx)
 }
 
 export async function login(ctx) {
   const {
     request: {
-      body: { user },
+      body: {user},
     },
-  } = ctx;
+  } = ctx
 
-  await handleResponsePromise(UserController.loginUser(user), ctx);
+  await handleResponsePromise(UserController.loginUser(user), ctx)
 }
 
 export async function logout(ctx) {
   const {
     request: {
-      body: { user },
+      body: {user},
     },
-  } = ctx;
+  } = ctx
 
-  await handleResponsePromise(UserController.logoutUser(user), ctx);
+  await handleResponsePromise(UserController.logoutUser(user), ctx)
 }

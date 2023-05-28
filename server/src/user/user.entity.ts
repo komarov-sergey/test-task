@@ -6,24 +6,24 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   VersionColumn,
-} from "typeorm";
+} from 'typeorm'
 
-import { Task } from "../task/task.entity";
+import {Task} from '../task/task.entity'
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number
 
   @Column()
-  username: string;
+  username: string
 
   @Column()
-  email: string;
+  email: string
 
   @Column()
-  password: string;
+  password: string
 
-  @Column({ type: "boolean", default: false })
-  isSessionOpen: boolean;
+  @Column({type: 'boolean', default: false})
+  isSessionOpen: boolean
 }
