@@ -2,7 +2,6 @@ export default async function (ctx, next) {
   try {
     await next();
   } catch (err) {
-    console.log({ err });
     ctx.status = err.status || 500;
     const code = err.code || "INTERNAL_SERVER_ERROR";
     const description = err.message || "";

@@ -16,8 +16,6 @@ export async function createTask(ctx) {
     },
   } = ctx;
 
-  // console.log({task})
-
   await handleResponsePromise(TaskController.createTask(task), ctx);
 }
 

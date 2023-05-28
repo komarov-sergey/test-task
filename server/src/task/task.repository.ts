@@ -6,7 +6,6 @@ export const TaskRepository = AppDataSource.getRepository(Task);
 
 export class TaskController {
   public static async createTask(task) {
-    console.log({ task });
     try {
       const newTask = await TaskRepository.save({ ...task });
       return Promise.resolve(newTask);
