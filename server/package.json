@@ -17,6 +17,7 @@
     "jsonwebtoken": "^8.5.1",
     "koa": "^2.13.4",
     "koa-body": "^5.0.0",
+    "koa-body-validator": "^1.0.1",
     "koa-router": "^10.1.1",
     "pg": "^8.4.0",
     "pratica": "^2.0.3",

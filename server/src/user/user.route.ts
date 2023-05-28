@@ -1,14 +1,36 @@
 import Router from 'koa-router'
+import {Joi, bodySchema} from 'koa-body-validator'
 
 import {UserController} from './user.repository'
 import {handleResponsePromise} from '../helpers'
 
 export default new Router()
-  .post('/', registerUser)
-  .post('/login', login)
+  .post(
+    '/',
+    bodySchema({
+      task: {
+        email: Joi.string().required(),
+        password: Joi.string().required(),
+        username: Joi.string().required(),
+      },
+    }),
+    registerUser
+  )
+  .post(
+    '/login',
+    bodySchema({
+      task: {
+        password: Joi.string().required(),
+        username: Joi.string().required(),
+      },
+    }),
+    login
+  )
   .post('/logout', logout)
 
 export async function registerUser(ctx) {
+  ctx.validate()
+
   const {
     request: {
       body: {user},
@@ -19,6 +41,8 @@ export async function registerUser(ctx) {
 }
 
 export async function login(ctx) {
+  ctx.validate()
+
   const {
     request: {
       body: {user},

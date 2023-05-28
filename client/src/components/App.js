@@ -34,19 +34,20 @@ function App() {
     handleSubmit,
     getValues,
     setValue,
-    // reset,
   } = useForm({ defaultAddTaskValues });
   const {
     control: controlLogin,
     formState: { errors: errorsLogin },
     handleSubmit: handleSubmitLogin,
     getValues: getValuesLogin,
-    // reset: resetLogin,
   } = useForm({ defaultLoginValues });
   const [currentUserState, dispatch] = useContext(CurrentUserContext);
   const { decodedToken } = useJwt(token);
-  console.log({ currentUserState });
   const toast = useRef(null);
+
+  useEffect(() => {
+    getAllTasks();
+  }, []);
 
   const show = (severity = "success", msg) => {
     toast.current.show({
@@ -56,9 +57,13 @@ function App() {
     });
   };
 
-  useEffect(() => {
-    getAllTasks();
-  }, []);
+  const clearForm = () => {
+    setValue("username", "");
+    setValue("email", "");
+    setValue("body", "");
+    setValue("status", false);
+    setSelectedTask(null);
+  };
 
   const getAllTasks = () => {
     fetch("/api/task")
@@ -70,7 +75,6 @@ function App() {
       })
       .catch((err) => {
         err.then((json) => {
-          console.log({ json });
           show("error", json.errors.body[0]);
         });
       });
@@ -96,7 +100,6 @@ function App() {
         })
         .catch((err) => {
           err.then((json) => {
-            console.log({ json });
             show("error", json.errors.body[0]);
           });
         });
@@ -105,8 +108,7 @@ function App() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization:
-            "Token eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcm5hbWUiOiJTZXJnZXkiLCJleHAiOjE2OTAzNjk0ODMsImlhdCI6MTY4NTE4NTQ4M30.yLoU9CZ9cMtaZ4WF0Suv2vmDTn7BR-rK7lvLHdcnHp8",
+          Authorization: `Token ${token}`,
         },
         body: JSON.stringify({ task: getValues() }),
       })
@@ -121,7 +123,6 @@ function App() {
         })
         .catch((err) => {
           err.then((json) => {
-            console.log({ json });
             show(
               "error",
               json.code === "UNAUTHORIZED_ERROR"
@@ -132,16 +133,10 @@ function App() {
         });
     }
 
-    setValue("username", "");
-    setValue("email", "");
-    setValue("body", "");
-    setValue("status", false);
-    setSelectedTask(null);
+    clearForm();
   };
 
   const doLogin = (data) => {
-    console.log(getValuesLogin());
-
     const formValues = getValuesLogin();
 
     const reqBody = {
@@ -169,7 +164,6 @@ function App() {
       })
       .catch((err) => {
         err.then((json) => {
-          console.log({ json });
           show("error", json.errors.body[0]);
         });
       });
@@ -199,28 +193,22 @@ function App() {
       })
       .catch((err) => {
         err.then((json) => {
-          console.log({ json });
           show("error", json.errors.body[0]);
         });
       })
       .finally(() => {
         setToken("");
-        setSelectedTask(null);
-        setValue("username", "");
-        setValue("email", "");
-        setValue("body", "");
-        setValue("status", false);
+        clearForm();
         dispatch({ type: "SET_UNAUTHORIZED" });
       });
   };
 
   const onSelectTask = (e) => {
-    console.log(e.value);
     if (!currentUserState.isLoggedIn) {
       return;
     }
-    setSelectedTask(e.value);
 
+    setSelectedTask(e.value);
     setValue("username", e.value.username);
     setValue("email", e.value.email);
     setValue("body", e.value.body);
@@ -228,11 +216,7 @@ function App() {
   };
 
   const addNewTackClick = (e) => {
-    setValue("username", "");
-    setValue("email", "");
-    setValue("body", "");
-    setValue("status", false);
-    setSelectedTask(null);
+    clearForm();
   };
 
   const getFormErrorMessage = (name) => {
