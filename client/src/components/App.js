@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
@@ -7,17 +7,22 @@ import { Controller, useForm } from "react-hook-form";
 import { classNames } from "primereact/utils";
 import { Toast } from "primereact/toast";
 import { Password } from "primereact/password";
+import { Checkbox } from "primereact/checkbox";
+import { useJwt } from "react-jwt";
 
+import { CurrentUserContext } from "../contexts/currentUser";
+import useSessionStorage from "../hooks/useSessionStorage";
 import s from "./App.module.scss";
 
 function App() {
+  const [token, setToken] = useSessionStorage("token");
   const [tasks, setTasks] = useState([]);
   const [selectedTask, setSelectedTask] = useState(null);
   const defaultAddTaskValues = {
     username: "",
     email: "",
     body: "",
-    status: "",
+    status: false,
   };
   const defaultLoginValues = {
     email: "",
@@ -38,7 +43,9 @@ function App() {
     getValues: getValuesLogin,
     // reset: resetLogin,
   } = useForm({ defaultLoginValues });
-
+  const [currentUserState, dispatch] = useContext(CurrentUserContext);
+  const { decodedToken } = useJwt(token);
+  console.log({ currentUserState });
   const toast = useRef(null);
 
   const show = (severity = "success", msg) => {
@@ -115,7 +122,12 @@ function App() {
         .catch((err) => {
           err.then((json) => {
             console.log({ json });
-            show("error", json.errors.body[0]);
+            show(
+              "error",
+              json.code === "UNAUTHORIZED_ERROR"
+                ? "Session Expired pls relogin"
+                : "Something went wrong"
+            );
           });
         });
     }
@@ -123,7 +135,7 @@ function App() {
     setValue("username", "");
     setValue("email", "");
     setValue("body", "");
-    setValue("status", "");
+    setValue("status", false);
     setSelectedTask(null);
   };
 
@@ -149,9 +161,11 @@ function App() {
       .then((response) => {
         return response.ok ? response.json() : Promise.reject(response.json());
       })
-      .then((taskData) => {
+      .then((userData) => {
         getAllTasks();
         show("success", "Login Success");
+        dispatch({ type: "SET_AUTHORIZED", payload: userData });
+        setToken(userData.token);
       })
       .catch((err) => {
         err.then((json) => {
@@ -163,24 +177,61 @@ function App() {
 
   const doLogout = (e) => {
     e.preventDefault();
+    const reqBody = {
+      user: {
+        id: decodedToken.id,
+      },
+    };
 
-    console.log("Logout");
+    fetch("/api/user/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(reqBody),
+    })
+      .then((response) => {
+        return response.ok ? response.json() : Promise.reject(response.json());
+      })
+      .then((userData) => {
+        getAllTasks();
+        show("success", "Logout Success");
+      })
+      .catch((err) => {
+        err.then((json) => {
+          console.log({ json });
+          show("error", json.errors.body[0]);
+        });
+      })
+      .finally(() => {
+        setToken("");
+        setSelectedTask(null);
+        setValue("username", "");
+        setValue("email", "");
+        setValue("body", "");
+        setValue("status", false);
+        dispatch({ type: "SET_UNAUTHORIZED" });
+      });
   };
 
   const onSelectTask = (e) => {
     console.log(e.value);
+    if (!currentUserState.isLoggedIn) {
+      return;
+    }
     setSelectedTask(e.value);
 
     setValue("username", e.value.username);
     setValue("email", e.value.email);
     setValue("body", e.value.body);
+    setValue("status", e.value.status);
   };
 
   const addNewTackClick = (e) => {
     setValue("username", "");
     setValue("email", "");
     setValue("body", "");
-    setValue("status", "");
+    setValue("status", false);
     setSelectedTask(null);
   };
 
@@ -250,8 +301,10 @@ function App() {
               </div>
             )}
           />
-          <Button type="submit">Login</Button>
-          <Button onClick={doLogout}>Logout</Button>
+          {!currentUserState.isLoggedIn && <Button type="submit">Login</Button>}
+          {currentUserState.isLoggedIn && (
+            <Button onClick={doLogout}>Logout</Button>
+          )}
         </form>
       </header>
       <main>
@@ -336,21 +389,14 @@ function App() {
             name="status"
             control={control}
             render={({ field, fieldState }) => (
-              <div>
-                <label
-                  htmlFor={field.name}
-                  className={classNames({ "p-error": errors.value })}
-                ></label>
-                <span className="p-float-label">
-                  <InputText
-                    id={field.name}
-                    value={field.value}
-                    className={classNames({ "p-invalid": fieldState.error })}
-                    onChange={(e) => field.onChange(e.target.value)}
-                  />
-                  <label htmlFor={field.name}>Status</label>
-                </span>
-                {getFormErrorMessage(field.name)}
+              <div className={s.checkbox}>
+                <Checkbox
+                  id={field.name}
+                  className={classNames({ "p-invalid": fieldState.error })}
+                  inputRef={field.ref}
+                  checked={field.value}
+                  onChange={(e) => field.onChange(!field.value)}
+                />
               </div>
             )}
           />
@@ -371,12 +417,8 @@ function App() {
             <Column field="username" sortable header="username"></Column>
             <Column field="email" sortable header="email"></Column>
             <Column field="body" sortable header="body"></Column>
-            <Column field="status" sortable header="status"></Column>
-            <Column
-              rowEditor
-              headerStyle={{ width: "10%", minWidth: "8rem" }}
-              bodyStyle={{ textAlign: "center" }}
-            ></Column>
+            <Column field="status" sortable header="done"></Column>
+            <Column field="updated" sortable header="updated by admin"></Column>
           </DataTable>
         )}
       </main>

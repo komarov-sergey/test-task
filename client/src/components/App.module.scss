@@ -43,3 +43,12 @@ main {
 .border {
   border: 1px solid gray;
 }
+
+.checkbox {
+  display: flex;
+  flex-flow: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
