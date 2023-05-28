@@ -8,7 +8,7 @@ import { classNames } from "primereact/utils";
 import { Toast } from "primereact/toast";
 import { Password } from "primereact/password";
 
-// import s from "./App.module.scss";
+import s from "./App.module.scss";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -41,9 +41,9 @@ function App() {
 
   const toast = useRef(null);
 
-  const show = (msg) => {
+  const show = (severity = "success", msg) => {
     toast.current.show({
-      severity: "success",
+      severity,
       summary: msg,
       detail: getValues("value"),
     });
@@ -56,27 +56,42 @@ function App() {
   const getAllTasks = () => {
     fetch("/api/task")
       .then((response) => {
-        return response.json();
+        return response.ok ? response.json() : Promise.reject(response.json());
       })
       .then((taskData) => {
         setTasks(taskData);
+      })
+      .catch((err) => {
+        err.then((json) => {
+          console.log({ json });
+          show("error", json.errors.body[0]);
+        });
       });
   };
 
   const upsertTask = (data) => {
-    console.log(getValues());
-
     if (!selectedTask) {
       fetch("/api/task", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ task: getValues() }),
       })
         .then((response) => {
-          return response.json();
+          return response.ok
+            ? response.json()
+            : Promise.reject(response.json());
         })
         .then((taskData) => {
           getAllTasks();
-          show("Task Added");
+          show("success", "Task Added");
+        })
+        .catch((err) => {
+          err.then((json) => {
+            console.log({ json });
+            show("error", json.errors.body[0]);
+          });
         });
     } else {
       fetch(`/api/task/${selectedTask.id}`, {
@@ -89,13 +104,27 @@ function App() {
         body: JSON.stringify({ task: getValues() }),
       })
         .then((response) => {
-          return response.json();
+          return response.ok
+            ? response.json()
+            : Promise.reject(response.json());
         })
         .then((taskData) => {
           getAllTasks();
-          show("Task Updated");
+          show("success", "Task Updated");
+        })
+        .catch((err) => {
+          err.then((json) => {
+            console.log({ json });
+            show("error", json.errors.body[0]);
+          });
         });
     }
+
+    setValue("username", "");
+    setValue("email", "");
+    setValue("body", "");
+    setValue("status", "");
+    setSelectedTask(null);
   };
 
   const doLogin = (data) => {
@@ -118,11 +147,17 @@ function App() {
       body: JSON.stringify(reqBody),
     })
       .then((response) => {
-        return response.json();
+        return response.ok ? response.json() : Promise.reject(response.json());
       })
       .then((taskData) => {
         getAllTasks();
-        show("Login Success");
+        show("success", "Login Success");
+      })
+      .catch((err) => {
+        err.then((json) => {
+          console.log({ json });
+          show("error", json.errors.body[0]);
+        });
       });
   };
 
@@ -139,6 +174,14 @@ function App() {
     setValue("username", e.value.username);
     setValue("email", e.value.email);
     setValue("body", e.value.body);
+  };
+
+  const addNewTackClick = (e) => {
+    setValue("username", "");
+    setValue("email", "");
+    setValue("body", "");
+    setValue("status", "");
+    setSelectedTask(null);
   };
 
   const getFormErrorMessage = (name) => {
@@ -159,7 +202,7 @@ function App() {
 
   return (
     <>
-      <header>
+      <header className={s.border}>
         <form onSubmit={handleSubmitLogin(doLogin)}>
           <Controller
             name="usernameLogin"
@@ -212,7 +255,7 @@ function App() {
         </form>
       </header>
       <main>
-        <Button>Add new Tasks</Button>
+        <Button onClick={addNewTackClick}>Add new Tasks</Button>
         <form onSubmit={handleSubmit(upsertTask)}>
           <Controller
             name="username"
