@@ -6,6 +6,7 @@ export const TaskRepository = AppDataSource.getRepository(Task);
 
 export class TaskController {
   public static async createTask(task) {
+    console.log({ task });
     try {
       const newTask = await TaskRepository.save({ ...task });
       return Promise.resolve(newTask);
@@ -27,6 +28,10 @@ export class TaskController {
       let task = await TaskRepository.findOneBy({ id });
       if (!task) {
         return Promise.reject("No task for update found");
+      }
+
+      if (!task.updated) {
+        taskRequest.updated = task.body === taskRequest.body ? false : true;
       }
 
       const updatedTask = await TaskRepository.save({

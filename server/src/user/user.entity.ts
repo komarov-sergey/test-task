@@ -24,6 +24,6 @@ export class User {
   @Column()
   password: string;
 
-  // @OneToMany(() => Task, (task) => task.author)
-  // tasks: Task[];
+  @Column({ type: "boolean", default: false })
+  isSessionOpen: boolean;
 }

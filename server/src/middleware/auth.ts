@@ -21,6 +21,9 @@ export default async function (ctx, next) {
 
       if (!user) throw new AuthError("Invalid token");
 
+      if (!user.isSessionOpen)
+        throw new AuthError("Session expired pls login again");
+
       ctx.state.user = user;
     } catch (e) {
       throw new AuthError("Invalid token");

@@ -18,15 +18,15 @@ export class Task {
   @Column()
   body: string;
 
-  @Column()
-  status: string;
+  @Column({ type: "boolean", default: false })
+  status: boolean;
+
+  @Column({ type: "boolean", default: false })
+  updated: boolean;
 
   @Column()
   username: string;
 
   @Column()
   email: string;
-
-  // @ManyToOne(() => User, (user) => user.tasks, { eager: true })
-  // author: User;
 }
