@@ -66,7 +66,8 @@ function App() {
   }
 
   const getAllTasks = () => {
-    fetch('/api/task')
+    // fetch('/api/task')
+    fetch('/task')
       .then((response) => {
         return response.ok ? response.json() : Promise.reject(response.json())
       })
@@ -74,15 +75,16 @@ function App() {
         setTasks(taskData)
       })
       .catch((err) => {
-        err.then((json) => {
-          show('error', json.errors.body[0])
-        })
+        console.log({err})
+        // err.then((json) => {
+        //   show('error', json.errors.body[0])
+        // })
       })
   }
 
   const upsertTask = (data) => {
     if (!selectedTask) {
-      fetch('/api/task', {
+      fetch('/task', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +144,7 @@ function App() {
       },
     }
 
-    fetch('/api/user/login', {
+    fetch('/user/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -173,7 +175,7 @@ function App() {
       },
     }
 
-    fetch('/api/user/logout', {
+    fetch('/user/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
