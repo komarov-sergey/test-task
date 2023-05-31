@@ -66,8 +66,7 @@ function App() {
   }
 
   const getAllTasks = () => {
-    // fetch('/api/task')
-    fetch('http://node-test.edi12.eu/task')
+    fetch('/api/task')
       .then((response) => {
         return response.ok ? response.json() : Promise.reject(response.json())
       })
@@ -75,16 +74,15 @@ function App() {
         setTasks(taskData)
       })
       .catch((err) => {
-        console.log({err})
-        // err.then((json) => {
-        //   show('error', json.errors.body[0])
-        // })
+        err.then((json) => {
+          show('error', json.errors.body[0])
+        })
       })
   }
 
   const upsertTask = (data) => {
     if (!selectedTask) {
-      fetch('/task', {
+      fetch('/api/task', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +102,7 @@ function App() {
           })
         })
     } else {
-      fetch(`http://node-test.edi12.eu/api/task/${selectedTask.id}`, {
+      fetch(`/api/task/${selectedTask.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -144,7 +142,7 @@ function App() {
       },
     }
 
-    fetch('http://node-test.edi12.eu/user/login', {
+    fetch('/api/user/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -175,7 +173,7 @@ function App() {
       },
     }
 
-    fetch('http://node-test.edi12.eu/api/user/logout', {
+    fetch('/api/user/logout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
